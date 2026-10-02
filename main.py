@@ -18,26 +18,27 @@ def main():
                 menage_list(filepath)
                 continue
             case 1:
-                files_list=path.Path(lists_dir).glob("*.csv")
-                files_list_name=[]
-
-                for i, file in enumerate(files_list,0):
-                        print(str(i)+ " : " +file.name)
-                        files_list_name.append(file)
-                        
-                index = int(input("insert index : "))
-                file = files_list_name[index]
-                filepath=path.Path(lists_dir).joinpath(file.name)
-
+                filepath = choose_list()
                 menage_list(filepath)
-                
-
                 continue
             case 2:
                 exiting=True
                 continue
             
             case _ : print("unrecognized command")
+
+def choose_list():
+    files_list=path.Path(lists_dir).glob("*.csv")
+    files_list_name=[]
+
+    for i, file in enumerate(files_list,0):
+            print(str(i)+ " : " +file.name)
+            files_list_name.append(file)
+                        
+    index = int(input("insert index : "))
+    file = files_list_name[index]
+    filepath=path.Path(lists_dir).joinpath(file.name)
+    return filepath
 
 def create_new_list():
     name=None
@@ -62,15 +63,13 @@ def menage_list(filepath):
         opt=int(input(""))
         match opt:
             case 0:
-                unused_prompts_index=df.index[df["date"].isna()].to_list()
-                if len(unused_prompts_index)==0:
-                    print("no more suggestions left")
+                indx = get_random_unused_prompt(df)
+                if indx==-1:
                     continue
-                chosen_idx=random.randrange(0,len(unused_prompts_index))
-                print("Chosen :", df.loc[unused_prompts_index[chosen_idx],"prompt"])
+                print("Chosen :", df.loc[indx,"prompt"])
                 committing=input("commit? y/n ")=="y"
                 if committing:
-                    df.loc[unused_prompts_index[chosen_idx],"date"]= str(datetime.datetime.now().date())
+                    df.loc[indx,"date"]= str(datetime.datetime.now().date())
                     df.to_csv(filepath)
                 
             case 1:
@@ -84,6 +83,15 @@ def menage_list(filepath):
                 exiting=True
 
             case _: print("unrecognized prompt")
+
+def get_random_unused_prompt(df):
+    unused_prompts_index=df.index[df["date"].isna()].to_list()
+    if len(unused_prompts_index)==0:
+        print("no more suggestions left")
+        indx=-1
+    chosen_idx=random.randrange(0,len(unused_prompts_index))
+    indx=unused_prompts_index[chosen_idx]
+    return indx
 
                 
 
